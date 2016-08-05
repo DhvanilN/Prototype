@@ -3,7 +3,7 @@ import os,re,tweepy,PyPDF2, chilkat sys,glob,webbrowser,smtplib,dropbox,ftplib,x
 from win32 import win32api
 from send2trash import send2trash
 from os.path import join, dirname, abspath
-import mimetypes, docx, wave
+import mimetypes, docx, wave, binascii, struct
 from email.mime.multipart import MIMEMultipart
 from email import encoders
 from email.message import Message
